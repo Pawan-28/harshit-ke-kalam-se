@@ -9,6 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const SECRET_KEY = process.env.JWT_SECRET;
 
+<<<<<<< HEAD
 
 
 // Connect to MongoDB
@@ -41,6 +42,59 @@ app.use(bodyParser.json());
 const adminUser = {
   username: 'admin',
   password: 'admin123'
+=======
+const FRONTEND_URLS = [
+  'https://harshit-ke-kalam-se.vercel.app',
+  'http://localhost:5173',
+  "https://glistening-zabaione-a11746.netlify.app"
+];
+
+// Custom CORS middleware
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    
+    const originLower = origin.toLowerCase();
+    if (FRONTEND_URLS.some(url => url.toLowerCase() === originLower)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
+  maxAge: 86400 // 24 hours
+};
+
+// Add CORS middleware
+app.use(cors(corsOptions));
+
+// Add pre-flight request handler
+app.options('*', cors(corsOptions));
+
+// Add CORS headers to all responses
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', FRONTEND_URLS[0]);
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
+  next();
+});
+
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI)
+
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('MongoDB connection error:', err));
+
+app.use(bodyParser.json());
+
+const adminUser = {
+  username: process.env.ADMIN_USERNAME,
+  password: process.env.ADMIN_PASSWORD
+>>>>>>> 73bfdb7c2c20a6b8e66db9589e836f20626c0ff9
 };
 
 // Define Mongoose schemas for homepage sections
@@ -398,7 +452,12 @@ app.get('*', (req, res, next) => {
     return next();
   }
   // Instead of redirecting, respond with a JSON message or frontend URL
+<<<<<<< HEAD
   res.json({ message: 'Frontend URL is ' + FRONTEND_URL });
+=======
+  res.json({ message: 'Frontend URLs are', urls: FRONTEND_URLS });
+
+>>>>>>> 73bfdb7c2c20a6b8e66db9589e836f20626c0ff9
 });
 
 app.get('/', (req, res) => {
@@ -407,7 +466,11 @@ app.get('/', (req, res) => {
 
 // New endpoint to get frontend URL
 app.get('/api/frontend-url', (req, res) => {
+<<<<<<< HEAD
   res.json({ frontendUrl: FRONTEND_URL });
+=======
+  res.json({ frontendUrl: FRONTEND_URLS[0] });
+>>>>>>> 73bfdb7c2c20a6b8e66db9589e836f20626c0ff9
 });
 
 app.listen(PORT, () => {
