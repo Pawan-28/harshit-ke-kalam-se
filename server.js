@@ -9,40 +9,6 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const SECRET_KEY = process.env.JWT_SECRET;
 
-<<<<<<< HEAD
-
-
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
-
-
-
-  const FRONTEND_URL = 'https://harshit-ke-kalam-se.vercel.app';
-
-  const allowedOrigins = [
-    FRONTEND_URL,
-    'http://localhost:5173'
-  ];
-  
-  app.use(cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    credentials: true,
-  }));
-  
-app.use(bodyParser.json());
-
-const adminUser = {
-  username: 'admin',
-  password: 'admin123'
-=======
 const FRONTEND_URLS = [
   'https://harshit-ke-kalam-se.vercel.app',
   'http://localhost:5173',
@@ -85,7 +51,6 @@ app.use((req, res, next) => {
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
-
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
 
@@ -94,7 +59,6 @@ app.use(bodyParser.json());
 const adminUser = {
   username: process.env.ADMIN_USERNAME,
   password: process.env.ADMIN_PASSWORD
->>>>>>> 73bfdb7c2c20a6b8e66db9589e836f20626c0ff9
 };
 
 // Define Mongoose schemas for homepage sections
@@ -146,7 +110,6 @@ const customizationSchema = new mongoose.Schema({
   localNewsTitle: String,
   localNewsArticles: [latestNewsArticleSchema],
   marqueeItems: [String],
-
   navbarCategories: [String],
   navbarLogoParts: {
     part1: String, 
@@ -165,7 +128,6 @@ const customizationSchema = new mongoose.Schema({
     address: String
   },
   footerQuickLinksCategories: [String],
-
   version: { type: Number, default: 1 },
   createdAt: { type: Date, default: Date.now }
 });
@@ -199,7 +161,7 @@ function authenticateToken(req, res, next) {
 app.get('/api/customization', async (req, res) => {
   try {
     let customization = await Customization.findOne().sort({ version: -1 });
-if (!customization) {
+    if (!customization) {
       customization = new Customization({
         siteTitle: 'NewsBihar 24/7',
         footerLinks: [
@@ -268,8 +230,6 @@ if (!customization) {
           'https://www.youtube.com/embed/dQw4w9WgXcQ',
           'https://www.youtube.com/embed/3JZ_D3ELwOQ'
         ],
-        browseByCategoryTitle: 'Browse by Category',
-        categories: ['Politics', 'Business', 'Technology', 'Sports', 'Health'],
         localNewsTitle: 'Local News',
         localNewsArticles: [
           {
@@ -296,54 +256,21 @@ if (!customization) {
             author: 'Education Desk',
             date: '2024-06-05'
           }
-        ]
-      });
-      await customization.save();
-    }
-    // Fix malformed JSON by using lean() to get plain JS object and then send JSON
-    let customizationObj = await Customization.findOne().sort({ version: -1 }).lean();
-    if (!customizationObj) {
-      customizationObj = {
-        siteTitle: 'NewsBihar 24/7',
-        footerLinks: [
-          { name: 'Home', url: '/' },
-          { name: 'About', url: '/aboutus' },
-          { name: 'Contact', url: '/contact' }
         ],
-        heroBanner: {
-          title: 'Welcome to Our News Portal',
-          subtitle: 'Stay updated with the latest news, articles, and videos from around the world',
-          button1Text: 'Read Latest News',
-          button2Text: 'Watch Videos'
-        },
-        latestNewsTitle: 'Latest News',
-        latestNewsArticles: [],
-        featuredArticlesTitle: 'Featured Articles',
-        featuredArticles: [],
-        photoGalleryTitle: 'Photo Gallery',
-        galleryPhotos: [],
-        popularTags: ['Politics', 'Technology', 'Sports', 'Health', 'Finance'],
-        newsletterTitle: 'Newsletter',
-        newsletterDescription: 'Stay updated with our latest news and articles',
-        videoNewsTitle: 'Video News',
-        videos: [],
-        browseByCategoryTitle: 'Browse by Category',
-        categories: [],
-        localNewsTitle: 'Local News',
-        localNewsArticles: [],
-        marqueeItems: [],
         navbarCategories: ['Home', 'About', 'Contact'],
         navbarLogoParts: { part1: 'News', part2: 'Bihar', part3: '24/7' },
         footerLogoParts: { part1: 'News', part2: 'Bihar', part3: '24/7' },
         footerDescription: 'Delivering the latest news with clarity and speed. Stay informed with breaking news, in-depth analysis, and exclusive stories.',
         footerContactInfo: { email: 'contact@newsbihar247.com', phone: '+91 12345 67890', address: '123 News Street, Bihar, India' },
-        footerQuickLinksCategories: ['Home', 'About', 'Contact', 'Advertise'],
-        version: 1,
-        createdAt: new Date()
-      };
+        footerQuickLinksCategories: ['Home', 'About', 'Contact', 'Advertise']
+      });
+      await customization.save();
     }
+    
+    const customizationObj = customization.toObject();
     res.json(customizationObj);
   } catch (error) {
+    console.error('Error fetching customization data:', error);
     res.status(500).json({ message: 'Error fetching customization data' });
   }
 });
@@ -369,8 +296,6 @@ app.post('/api/admin/customization', authenticateToken, async (req, res) => {
       newsletterDescription,
       videoNewsTitle,
       videos,
-      browseByCategoryTitle,
-      categories,
       localNewsTitle,
       localNewsArticles,
       marqueeItems,
@@ -398,8 +323,6 @@ app.post('/api/admin/customization', authenticateToken, async (req, res) => {
       newsletterDescription,
       videoNewsTitle,
       videos,
-      browseByCategoryTitle,
-      categories,
       localNewsTitle,
       localNewsArticles,
       marqueeItems,
@@ -440,37 +363,21 @@ app.get('/api/news/category/:category', async (req, res) => {
   }
 });
 
-// Remove static file serving from local frontend dist directory
-// const path = require('path');
-// const expressStaticMiddleware = express.static(path.join(__dirname, '../Frontend/dist'));
-
-// app.use(expressStaticMiddleware);
-
-// Catch-all route to handle non-API requests without redirecting
-app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api/')) {
-    return next();
-  }
-  // Instead of redirecting, respond with a JSON message or frontend URL
-<<<<<<< HEAD
-  res.json({ message: 'Frontend URL is ' + FRONTEND_URL });
-=======
-  res.json({ message: 'Frontend URLs are', urls: FRONTEND_URLS });
-
->>>>>>> 73bfdb7c2c20a6b8e66db9589e836f20626c0ff9
-});
-
-app.get('/', (req, res) => {
-  res.send('NewsBihar API is running.');
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK' });
 });
 
 // New endpoint to get frontend URL
 app.get('/api/frontend-url', (req, res) => {
-<<<<<<< HEAD
-  res.json({ frontendUrl: FRONTEND_URL });
-=======
-  res.json({ frontendUrl: FRONTEND_URLS[0] });
->>>>>>> 73bfdb7c2c20a6b8e66db9589e836f20626c0ff9
+  res.json({ 
+    frontendUrl: FRONTEND_URLS[0],
+    allFrontendUrls: FRONTEND_URLS
+  });
+});
+
+app.get('/', (req, res) => {
+  res.send('NewsBihar API is running.');
 });
 
 app.listen(PORT, () => {
